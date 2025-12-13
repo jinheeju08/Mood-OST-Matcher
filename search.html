@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검색 결과 - Mood OST Matcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --text-color: #2d3748;
+            --light-bg: #f7fafc;
+            --white: #ffffff;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--white);
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 0.8rem 1.2rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            width: 250px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-btn {
+            padding: 0.8rem 1.8rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        /* Mood Buttons */
+        .mood-section {
+            margin-bottom: 2rem;
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .mood-title {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        .mood-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mood-btn {
+            padding: 0.6rem 1.2rem;
+            background: var(--light-bg);
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-color);
+            font-size: 0.85rem;
+        }
+
+        .mood-btn:hover {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Results Section */
+        .results-header {
+            margin-bottom: 2rem;
+        }
+
+        .results-title {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .results-info {
+            font-size: 1rem;
+            color: #718096;
+        }
+
+        /* Category Sections */
+        .category-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .category-title {
+            font-size: 1.6rem;
+            margin-bottom: 1.2rem;
+            color: var(--text-color);
+            padding-bottom: 0.8rem;
+            border-bottom: 3px solid var(--primary-color);
+            display: inline-block;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 1.2rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+            display: -webkit-box;
+            line-clamp: 2;           /* 표준 속성 */
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-movie {
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            margin-bottom: 0.3rem;
+        }
+
+        .card-mood {
+            font-size: 0.8rem;
+            color: #a0aec0;
+        }
+
+        /* No Results */
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            background: var(--white);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .no-results h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #718096;
+        }
+
+        .no-results p {
+            color: #a0aec0;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-btn {
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--text-color);
+            color: var(--white);
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 0.95rem;
+            margin-top: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .search-container {
+                width: 100%;
+            }
+
+            .search-input {
+                flex: 1;
+                max-width: none;
+            }
+
+            .results-title {
+                font-size: 1.8rem;
+            }
+
+            .cards-container {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 1rem;
+            }
+
+            .mood-buttons {
+                gap: 0.5rem;
+            }
+
+            .mood-btn {
+                padding: 0.5rem 0.9rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo" id="logoHome">🎵 Mood OST Matcher</div>
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="곡, 영화, 감독으로 검색...">
+            <button class="search-btn" id="searchBtn">검색</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Mood Buttons -->
+        <section class="mood-section">
+            <div class="mood-title">당신의 기분을 선택하세요</div>
+            <div class="mood-buttons" id="moodButtons"></div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-header">
+            <h1 class="results-title">검색결과</h1>
+            <p class="results-info" id="resultsInfo"></p>
+        </section>
+
+        <!-- Categories Container -->
+        <section id="categoriesContainer"></section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Mood OST Matcher - 감성에 따라 듣는 영화 OST</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script>
+        // Google Apps Script URL
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyNoKze2drPBrtsub6Oq5_KChrGKUONfoKwTqj9hZVLJVwADvRI8xZgvvZ8EbOWunzP/exec';
+
+        // Mood list
+        const moods = ['기쁨', '슬픔', '화남', '소심', '모험', '설렘', '평화', '웅장', '몽환', '위로'];
+
+        // Extract YouTube video ID from URL
+        function extractVideoId(url) {
+            const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+
+        // Get YouTube thumbnail URL
+        function getThumbnailUrl(url) {
+            const videoId = extractVideoId(url);
+            return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '';
+        }
+
+        // Get URL parameters
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                mood: params.get('mood'),
+                search: params.get('search')
+            };
+        }
+
+        // Filter data based on parameters
+        function filterData() {
+            const params = getUrlParams();
+            let filtered = ostData;
+
+            if (params.mood) {
+                filtered = filtered.filter(item => item.mood === params.mood);
+                document.getElementById('resultsInfo').textContent = `기분: "${params.mood}"`;
+            } else if (params.search) {
+                const searchLower = params.search.toLowerCase();
+                filtered = filtered.filter(item =>
+                    item.title.toLowerCase().includes(searchLower) ||
+                    item.movie.toLowerCase().includes(searchLower) ||
+                    item.category.toLowerCase().includes(searchLower)
+                );
+                document.getElementById('resultsInfo').textContent = `검색어: "${params.search}"`;
+            }
+
+            return filtered;
+        }
+
+        // Initialize mood buttons
+        function initMoodButtons() {
+            const container = document.getElementById('moodButtons');
+            moods.forEach(mood => {
+                const btn = document.createElement('button');
+                btn.className = 'mood-btn';
+                btn.textContent = mood;
+                btn.addEventListener('click', () => {
+                    sendDataToGAS({ timestamp: new Date().toISOString(), type: '선택어', value: mood });
+                    setTimeout(() => {
+                        window.location.href = `search.html?mood=${encodeURIComponent(mood)}`;
+                    }, 300);
+                });
+                container.appendChild(btn);
+            });
+        }
+
+        // Initialize results display
+        function displayResults() {
+            const filteredData = filterData();
+            const container = document.getElementById('categoriesContainer');
+
+            if (filteredData.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <h2>검색 결과가 없습니다</h2>
+                        <p>다른 키워드나 기분으로 검색해보세요.</p>
+                        <button class="back-btn" onclick="window.location.href='home.html'">홈으로 돌아가기</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const categories = ['디즈니', '지브리', '신카이마코토'];
+
+            categories.forEach(category => {
+                const categoryData = filteredData.filter(item => item.category === category);
+                if (categoryData.length === 0) return;
+
+                const section = document.createElement('section');
+                section.className = 'category-section';
+
+                const title = document.createElement('h2');
+                title.className = 'category-title';
+                title.textContent = category === '신카이마코토' ? '신카이 마코토 감독 영화 OST' : `${category} OST`;
+                section.appendChild(title);
+
+                const cardsContainer = document.createElement('div');
+                cardsContainer.className = 'cards-container';
+
+                categoryData.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+
+                    const img = document.createElement('img');
+                    img.className = 'card-image';
+                    img.src = getThumbnailUrl(item.url);
+                    img.alt = item.title;
+                    img.onerror = function() {
+                        this.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+                    };
+
+                    const content = document.createElement('div');
+                    content.className = 'card-content';
+
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'card-title';
+                    titleEl.textContent = item.title;
+
+                    const movieEl = document.createElement('div');
+                    movieEl.className = 'card-movie';
+                    movieEl.textContent = item.movie;
+
+                    const moodEl = document.createElement('div');
+                    moodEl.className = 'card-mood';
+                    moodEl.textContent = `기분: ${item.mood}`;
+
+                    content.appendChild(titleEl);
+                    content.appendChild(movieEl);
+                    content.appendChild(moodEl);
+
+                    card.appendChild(img);
+                    card.appendChild(content);
+
+                    card.addEventListener('click', () => {
+                        sendDataToGAS({
+                            timestamp: new Date().toISOString(),
+                            selectedOST: item.title,
+                            movie: item.movie,
+                            url: item.url
+                        });
+                        setTimeout(() => {
+                            window.open(item.url, '_blank');
+                        }, 300);
+                    });
+
+                    cardsContainer.appendChild(card);
+                });
+
+                section.appendChild(cardsContainer);
+                container.appendChild(section);
+            });
+        }
+
+        // Send data to Google Apps Script
+        function sendDataToGAS(data) {
+            fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).catch(error => console.log('Data sent to GAS'));
+        }
+
+        // Search functionality
+        document.getElementById('searchBtn').addEventListener('click', performSearch);
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            if (!searchTerm) return;
+
+            sendDataToGAS({ timestamp: new Date().toISOString(), type: '검색어', value: searchTerm });
+            setTimeout(() => {
+                window.location.href = `search.html?search=${encodeURIComponent(searchTerm)}`;
+            }, 300);
+        }
+
+        // Logo click to home
+        document.getElementById('logoHome').addEventListener('click', () => {
+            window.location.href = 'home.html';
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initMoodButtons();
+            displayResults();
+        });
+    </script>
+</body>
+</html>
